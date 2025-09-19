@@ -25,11 +25,9 @@ export type EncryptedData = z.infer<typeof EncryptedDataSchema>;
 export abstract class CryptoKeyStrategy {
   protected ENCODING: BufferEncoding = 'base64';
 
-  abstract generateKeyPair(): Promise<void>;
-  abstract generateSharedSecret(): string;
-  abstract generateSharedSecret(publicKey: string): string;
-  abstract encrypt(data: string): EncryptedData;
-  abstract decrypt(encryptedData: EncryptedData): string;
+  abstract generateKeyPair(): Promise<KeyPair>;
+  abstract symmetricKeyEncryption(data: string, symmetricKey: string): EncryptedData;
+  abstract symmetricKeyDecryption(encryptedData: EncryptedData, symmetricKey: string): string;
 
   // Helper methods to convert between formats
   stringToBytes(keyString: string): Uint8Array {

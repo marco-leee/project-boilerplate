@@ -28,7 +28,7 @@ export class KyberStrategy extends CryptoKeyStrategy {
     return this.encapsulation;
   }
 
-  async generateKeyPair(): Promise<void> {
+  async generateKeyPair(): Promise<KeyPair> {
     let privateKey: Uint8Array;
     let publicKey: Uint8Array;
 
@@ -50,9 +50,11 @@ export class KyberStrategy extends CryptoKeyStrategy {
       publicKey: this.bytesToString(publicKey),
       privateKey: this.bytesToString(privateKey),
     });
+
+    return this.keyPair;
   }
 
-  async generateEncapsulation(publicKey: string): Promise<string> {
+  async generateEncapsulation(publicKey: string): Promise<Encapsulation> {
     let encapsulationBytes: Uint8Array;
     let symmetricKeyBytes: Uint8Array;
 
@@ -81,60 +83,43 @@ export class KyberStrategy extends CryptoKeyStrategy {
       symmetricKey: this.bytesToString(symmetricKeyBytes),
     });
 
-    return this.encapsulation.encapsulation;
+    return this.encapsulation;
   }
 
-  async decryptEncapsulation(encapsulation: string): Promise<void> {
-    if (!this.keyPair) {
-      throw new Error('Key pair not set. Call generateKeyPair first.');
-    }
-
+  async decryptEncapsulation(encapsulation: string, privateKey: string): Promise<Encapsulation> {
     let symmetricKeyBytes: Uint8Array;
 
     switch (this.keySize) {
       case '512':
         symmetricKeyBytes = await new MlKem512().decap(
           this.stringToBytes(encapsulation),
-          this.stringToBytes(this.keyPair.privateKey)
+          this.stringToBytes(privateKey)
         );
         break;
       case '768':
         symmetricKeyBytes = await new MlKem768().decap(
           this.stringToBytes(encapsulation),
-          this.stringToBytes(this.keyPair.privateKey)
+          this.stringToBytes(privateKey)
         );
         break;
       case '1024':
         symmetricKeyBytes = await new MlKem1024().decap(
           this.stringToBytes(encapsulation),
-          this.stringToBytes(this.keyPair.privateKey)
+          this.stringToBytes(privateKey)
         );
         break;
     }
 
-    this.encapsulation = encapsulationSchema.parse({
+    return encapsulationSchema.parse({
       encapsulation,
       symmetricKey: this.bytesToString(symmetricKeyBytes),
     });
   }
 
-  generateSharedSecret(): string {
-    if (!this.encapsulation) {
-      throw new Error('Encapsulation not set');
-    }
-    return this.encapsulation.symmetricKey;
-  }
-
-  encrypt(data: string): EncryptedData {
-    if (!this.encapsulation) {
-      throw new Error(
-        'Encapsulation not set. Call generateEncapsulation first.'
-      );
-    }
-
+  symmetricKeyEncryption(message: string, symmetricKey: string): EncryptedData {
     // Use the symmetric key for AES encryption
     const symmetricKeyBytes = Buffer.from(
-      this.encapsulation.symmetricKey,
+      symmetricKey,
       this.ENCODING
     );
 
@@ -146,7 +131,7 @@ export class KyberStrategy extends CryptoKeyStrategy {
     cipher.setAAD(Buffer.alloc(0)); // No additional authenticated data
 
     // Encrypt the data
-    let encrypted = cipher.update(data, 'utf8');
+    let encrypted = cipher.update(message, 'utf8');
     encrypted = Buffer.concat([encrypted, cipher.final()]);
 
     // Get the authentication tag
@@ -159,18 +144,12 @@ export class KyberStrategy extends CryptoKeyStrategy {
     });
   }
 
-  decrypt(encryptedData: EncryptedData): string {
-    if (!this.encapsulation) {
-      throw new Error(
-        'Encapsulation not set. Call generateEncapsulation first.'
-      );
-    }
-
+  symmetricKeyDecryption(encryptedData: EncryptedData, symmetricKey: string): string {
     const { iv, tag, encryptedData: encrypted } = encryptedData;
 
     // Use the symmetric key for AES decryption
     const symmetricKeyBytes = Buffer.from(
-      this.encapsulation.symmetricKey,
+      symmetricKey,
       this.ENCODING
     );
 
@@ -198,24 +177,24 @@ export class KyberStrategy extends CryptoKeyStrategy {
 const demo = async () => {
   const client = new KyberStrategy('1024');
   const server = new KyberStrategy('1024');
-  await client.generateKeyPair();
-  const encap = await server.generateEncapsulation(client.getPublicKey()!);
-  await client.decryptEncapsulation(encap);
+  const { privateKey, publicKey } = await client.generateKeyPair();
+  const serverEncap = await server.generateEncapsulation(publicKey);
+  const clientEncap =await client.decryptEncapsulation(serverEncap.encapsulation, privateKey);
   const message = "Hello, World!";
-  const encrypted = client.encrypt(message);
-  const decrypted = server.decrypt(encrypted);
+  const encrypted = client.symmetricKeyEncryption(message, clientEncap.symmetricKey);
+  const decrypted = server.symmetricKeyDecryption(encrypted, serverEncap.symmetricKey);
 
   console.log(`message: ${message}`);
   console.log(`encrypted: `, encrypted);
   console.log(`decrypted: ${decrypted}`);
 
   const msg2 = "fuck you";
-  const encrypted2 = server.encrypt(msg2);
-  const decrypted2 = client.decrypt(encrypted2);
+  const encrypted2 = server.symmetricKeyEncryption(msg2, serverEncap.symmetricKey);
+  const decrypted2 = client.symmetricKeyDecryption(encrypted2, clientEncap.symmetricKey);
 
   console.log(`message: ${msg2}`);
   console.log(`encrypted: `, encrypted2);
   console.log(`decrypted: ${decrypted2}`);
 };
 
-// demo();
+demo();
