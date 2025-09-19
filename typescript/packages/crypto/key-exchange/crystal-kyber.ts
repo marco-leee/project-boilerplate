@@ -20,15 +20,15 @@ export class KyberStrategy extends CryptoKeyStrategy {
     super();
   }
 
-  setKeyPair(keyPair: KeyPair) {
-    this.keyPair = keyPair;
+  getPublicKey(): string | null {
+    return this.keyPair?.publicKey ?? null;
   }
 
-  setEncapsulation(encapsulation: Encapsulation) {
-    this.encapsulation = encapsulation;
+  getEncapsulation(): Encapsulation | null {
+    return this.encapsulation;
   }
 
-  async generateKeyPair(): Promise<KeyPair> {
+  async generateKeyPair(): Promise<void> {
     let privateKey: Uint8Array;
     let publicKey: Uint8Array;
 
@@ -46,13 +46,13 @@ export class KyberStrategy extends CryptoKeyStrategy {
         throw new Error('Invalid key size');
     }
 
-    return keyPairSchema.parse({
+    this.keyPair = keyPairSchema.parse({
       publicKey: this.bytesToString(publicKey),
       privateKey: this.bytesToString(privateKey),
     });
   }
 
-  async generateEncapsulation(publicKey: string): Promise<Encapsulation> {
+  async generateEncapsulation(publicKey: string): Promise<string> {
     let encapsulationBytes: Uint8Array;
     let symmetricKeyBytes: Uint8Array;
 
@@ -76,13 +76,15 @@ export class KyberStrategy extends CryptoKeyStrategy {
         throw new Error('Invalid key size');
     }
 
-    return encapsulationSchema.parse({
+    this.encapsulation = encapsulationSchema.parse({
       encapsulation: this.bytesToString(encapsulationBytes),
       symmetricKey: this.bytesToString(symmetricKeyBytes),
     });
+
+    return this.encapsulation.encapsulation;
   }
 
-  async decryptEncapsulation(encapsulation: string): Promise<Encapsulation> {
+  async decryptEncapsulation(encapsulation: string): Promise<void> {
     if (!this.keyPair) {
       throw new Error('Key pair not set. Call generateKeyPair first.');
     }
@@ -110,7 +112,7 @@ export class KyberStrategy extends CryptoKeyStrategy {
         break;
     }
 
-    return encapsulationSchema.parse({
+    this.encapsulation = encapsulationSchema.parse({
       encapsulation,
       symmetricKey: this.bytesToString(symmetricKeyBytes),
     });
@@ -196,12 +198,9 @@ export class KyberStrategy extends CryptoKeyStrategy {
 const demo = async () => {
   const client = new KyberStrategy('1024');
   const server = new KyberStrategy('1024');
-  const clientKey = await client.generateKeyPair();
-  client.setKeyPair(clientKey);
-  const encap = await server.generateEncapsulation(clientKey.publicKey);
-  server.setEncapsulation(encap);
-  const clientSideEncap = await client.decryptEncapsulation(encap.encapsulation);
-  client.setEncapsulation(clientSideEncap);
+  await client.generateKeyPair();
+  const encap = await server.generateEncapsulation(client.getPublicKey()!);
+  await client.decryptEncapsulation(encap);
   const message = "Hello, World!";
   const encrypted = client.encrypt(message);
   const decrypted = server.decrypt(encrypted);
@@ -218,3 +217,5 @@ const demo = async () => {
   console.log(`encrypted: `, encrypted2);
   console.log(`decrypted: ${decrypted2}`);
 };
+
+// demo();
