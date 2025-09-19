@@ -4,9 +4,7 @@
   "type": "module",
   "private": true,
   "workspaces": [
-    "packages/crypto",
-    "packages/data-structures",
-    "packages/algorithms"
+    "packages/*"
   ],
   "scripts": {
     "lint": "eslint . --ext .ts,.tsx,.js,.jsx",
