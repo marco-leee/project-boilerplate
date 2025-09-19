@@ -1,1 +1,1 @@
-export const ALGORITHMS = "algorithms";
+export const ALGORITHMS = 'algorithms';

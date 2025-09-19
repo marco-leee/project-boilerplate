@@ -1,1 +1,1 @@
-export const CRYPTO = "crypto";
+export const CRYPTO = 'crypto';
