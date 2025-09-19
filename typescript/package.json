@@ -1,0 +1,22 @@
+{
+  "name": "@intellistixman",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "workspaces": [
+    "packages/crypto",
+    "packages/data-structures",
+    "packages/algorithms"
+  ],
+  "dependencies": {
+    "@intellistixman/crypto": "workspace:*",
+    "@intellistixman/data-structures": "workspace:*",
+    "@intellistixman/algorithms": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  }
+}
