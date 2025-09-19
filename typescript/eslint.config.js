@@ -1,4 +1,5 @@
-import js from '@eslint/js';
+// @ts-check
+import eslint from '@eslint/js';
 import tseslint from 'typescript-eslint';
 import prettier from 'eslint-config-prettier';
 
@@ -18,7 +19,7 @@ export default tseslint.config(
   },
   {
     // Base configuration for all files
-    extends: [js.configs.recommended],
+    extends: [eslint.configs.recommended],
     files: ['**/*.{js,mjs,cjs,ts,tsx}'],
   },
   {
