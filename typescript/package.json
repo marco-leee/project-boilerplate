@@ -18,6 +18,7 @@
     "@intellistixman/algorithms": "workspace:*",
     "@intellistixman/crypto": "workspace:*",
     "@intellistixman/data-structures": "workspace:*",
+    "@intellistixman/os": "workspace:*",
     "zod": "^4.1.9"
   },
   "devDependencies": {
