@@ -54,6 +54,9 @@ export class KyberStrategy extends CryptoKeyStrategy {
     return this.keyPair;
   }
 
+  /**
+   * Everytime you generate an encapsulation, you will get a new symmetric key
+  */
   async generateEncapsulation(publicKey: string): Promise<Encapsulation> {
     let encapsulationBytes: Uint8Array;
     let symmetricKeyBytes: Uint8Array;
@@ -86,28 +89,37 @@ export class KyberStrategy extends CryptoKeyStrategy {
     return this.encapsulation;
   }
 
+  /**
+   * Be sure to use the same symmetric key for encryption and decryption
+  */
   async decryptEncapsulation(encapsulation: string, privateKey: string): Promise<Encapsulation> {
     let symmetricKeyBytes: Uint8Array;
 
-    switch (this.keySize) {
-      case '512':
-        symmetricKeyBytes = await new MlKem512().decap(
-          this.stringToBytes(encapsulation),
-          this.stringToBytes(privateKey)
-        );
-        break;
-      case '768':
-        symmetricKeyBytes = await new MlKem768().decap(
-          this.stringToBytes(encapsulation),
-          this.stringToBytes(privateKey)
-        );
-        break;
-      case '1024':
-        symmetricKeyBytes = await new MlKem1024().decap(
-          this.stringToBytes(encapsulation),
-          this.stringToBytes(privateKey)
-        );
-        break;
+    try {
+      switch (this.keySize) {
+        case '512':
+          symmetricKeyBytes = await new MlKem512().decap(
+            this.stringToBytes(encapsulation),
+            this.stringToBytes(privateKey)
+          );
+          break;
+        case '768':
+          symmetricKeyBytes = await new MlKem768().decap(
+            this.stringToBytes(encapsulation),
+            this.stringToBytes(privateKey)
+          );
+          break;
+        case '1024':
+          symmetricKeyBytes = await new MlKem1024().decap(
+            this.stringToBytes(encapsulation),
+            this.stringToBytes(privateKey)
+          );
+          break;
+        default:
+          throw new Error(`Invalid key size: ${this.keySize}`);
+      }
+    } catch (error) {
+      throw new Error(`Failed to decrypt encapsulation: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
 
     return encapsulationSchema.parse({
@@ -117,60 +129,78 @@ export class KyberStrategy extends CryptoKeyStrategy {
   }
 
   symmetricKeyEncryption(message: string, symmetricKey: string): EncryptedData {
-    // Use the symmetric key for AES encryption
-    const symmetricKeyBytes = Buffer.from(
-      symmetricKey,
-      this.ENCODING
-    );
+    try {
+      // Use the symmetric key for AES encryption
+      const symmetricKeyBytes = Buffer.from(
+        symmetricKey,
+        this.ENCODING
+      );
 
-    // Generate a random IV for AES-GCM
-    const iv = crypto.randomBytes(16);
+      // Validate key size for AES-256 (32 bytes)
+      if (symmetricKeyBytes.length !== 32) {
+        throw new Error(`Invalid symmetric key length: expected 32 bytes for AES-256, got ${symmetricKeyBytes.length} bytes`);
+      }
 
-    // Create cipher
-    const cipher = crypto.createCipheriv('aes-256-gcm', symmetricKeyBytes, iv);
-    cipher.setAAD(Buffer.alloc(0)); // No additional authenticated data
+      // Generate a random IV for AES-GCM
+      const iv = crypto.randomBytes(16);
 
-    // Encrypt the data
-    let encrypted = cipher.update(message, 'utf8');
-    encrypted = Buffer.concat([encrypted, cipher.final()]);
+      // Create cipher
+      const cipher = crypto.createCipheriv('aes-256-gcm', symmetricKeyBytes, iv);
+      cipher.setAAD(Buffer.from('intellistixman'));
 
-    // Get the authentication tag
-    const tag = cipher.getAuthTag();
+      // Encrypt the data
+      let encrypted = cipher.update(message, 'utf8');
+      encrypted = Buffer.concat([encrypted, cipher.final()]);
 
-    return EncryptedDataSchema.parse({
-      iv: iv.toString(this.ENCODING),
-      tag: tag.toString(this.ENCODING),
-      encryptedData: encrypted.toString(this.ENCODING),
-    });
+      // Get the authentication tag
+      const tag = cipher.getAuthTag();
+
+      return EncryptedDataSchema.parse({
+        iv: iv.toString(this.ENCODING),
+        tag: tag.toString(this.ENCODING),
+        encryptedData: encrypted.toString(this.ENCODING),
+      });
+    } catch (error) {
+      throw new Error(`Encryption failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
   }
 
   symmetricKeyDecryption(encryptedData: EncryptedData, symmetricKey: string): string {
-    const { iv, tag, encryptedData: encrypted } = encryptedData;
+    try {
+      const { iv, tag, encryptedData: encrypted } = encryptedData;
 
-    // Use the symmetric key for AES decryption
-    const symmetricKeyBytes = Buffer.from(
-      symmetricKey,
-      this.ENCODING
-    );
+      // Use the symmetric key for AES decryption
+      const symmetricKeyBytes = Buffer.from(
+        symmetricKey,
+        this.ENCODING
+      );
 
-    // Create decipher
-    const decipher = crypto.createDecipheriv(
-      'aes-256-gcm',
-      symmetricKeyBytes,
-      Buffer.from(iv, this.ENCODING)
-    );
-    decipher.setAuthTag(Buffer.from(tag, this.ENCODING));
-    decipher.setAAD(Buffer.alloc(0)); // No additional authenticated data
+      // Validate key size for AES-256 (32 bytes)
+      if (symmetricKeyBytes.length !== 32) {
+        throw new Error(`Invalid symmetric key length: expected 32 bytes for AES-256, got ${symmetricKeyBytes.length} bytes`);
+      }
 
-    // Decrypt the data
-    let decrypted = decipher.update(
-      Buffer.from(encrypted, this.ENCODING),
-      undefined,
-      'utf8'
-    );
-    decrypted += decipher.final('utf8');
+      // Create decipher
+      const decipher = crypto.createDecipheriv(
+        'aes-256-gcm',
+        symmetricKeyBytes,
+        Buffer.from(iv, this.ENCODING)
+      );
+      decipher.setAuthTag(Buffer.from(tag, this.ENCODING));
+      decipher.setAAD(Buffer.from('intellistixman'));
 
-    return decrypted;
+      // Decrypt the data
+      let decrypted = decipher.update(
+        Buffer.from(encrypted, this.ENCODING),
+        undefined,
+        'utf8'
+      );
+      decrypted += decipher.final('utf8');
+
+      return decrypted;
+    } catch (error) {
+      throw new Error(`Decryption failed: ${error instanceof Error ? error.message : 'Unknown error'}. This could be due to: incorrect key, tampered data, or mismatched encoding.`);
+    }
   }
 }
 

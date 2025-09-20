@@ -1,4 +1,5 @@
 import * as z from 'zod';
+import { readFile, writeFile } from 'node:fs/promises';
 
 export const keyPairSchema = z.object({
   publicKey: z.string(),
@@ -23,7 +24,7 @@ export const EncryptedDataSchema = z.object({
 export type EncryptedData = z.infer<typeof EncryptedDataSchema>;
 
 export abstract class CryptoKeyStrategy {
-  protected ENCODING: BufferEncoding = 'base64';
+  protected ENCODING: BufferEncoding = 'base64'; 
 
   abstract generateKeyPair(): Promise<KeyPair>;
   abstract symmetricKeyEncryption(data: string, symmetricKey: string): EncryptedData;
@@ -36,5 +37,19 @@ export abstract class CryptoKeyStrategy {
 
   bytesToString(keyBytes: Uint8Array): string {
     return Buffer.from(keyBytes).toString(this.ENCODING);
+  }
+
+  async readFile(filePath: string): Promise<string> {
+    return readFile(filePath, {
+      encoding: 'utf8',
+      flag: 'r',
+    });
+  }
+
+  async writeFile(filePath: string, data: string): Promise<void> {
+    return writeFile(filePath, data, {
+      encoding: 'utf8',
+      flag: 'w',
+    });
   }
 }
