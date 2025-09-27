@@ -56,7 +56,7 @@ export class KyberStrategy extends CryptoKeyStrategy {
 
   /**
    * Everytime you generate an encapsulation, you will get a new symmetric key
-  */
+   */
   async generateEncapsulation(publicKey: string): Promise<Encapsulation> {
     let encapsulationBytes: Uint8Array;
     let symmetricKeyBytes: Uint8Array;
@@ -91,8 +91,11 @@ export class KyberStrategy extends CryptoKeyStrategy {
 
   /**
    * Be sure to use the same symmetric key for encryption and decryption
-  */
-  async decryptEncapsulation(encapsulation: string, privateKey: string): Promise<Encapsulation> {
+   */
+  async decryptEncapsulation(
+    encapsulation: string,
+    privateKey: string
+  ): Promise<Encapsulation> {
     let symmetricKeyBytes: Uint8Array;
 
     try {
@@ -119,7 +122,9 @@ export class KyberStrategy extends CryptoKeyStrategy {
           throw new Error(`Invalid key size: ${this.keySize}`);
       }
     } catch (error) {
-      throw new Error(`Failed to decrypt encapsulation: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Failed to decrypt encapsulation: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
 
     return encapsulationSchema.parse({
@@ -131,21 +136,24 @@ export class KyberStrategy extends CryptoKeyStrategy {
   symmetricKeyEncryption(message: string, symmetricKey: string): EncryptedData {
     try {
       // Use the symmetric key for AES encryption
-      const symmetricKeyBytes = Buffer.from(
-        symmetricKey,
-        this.ENCODING
-      );
+      const symmetricKeyBytes = Buffer.from(symmetricKey, this.ENCODING);
 
       // Validate key size for AES-256 (32 bytes)
       if (symmetricKeyBytes.length !== 32) {
-        throw new Error(`Invalid symmetric key length: expected 32 bytes for AES-256, got ${symmetricKeyBytes.length} bytes`);
+        throw new Error(
+          `Invalid symmetric key length: expected 32 bytes for AES-256, got ${symmetricKeyBytes.length} bytes`
+        );
       }
 
       // Generate a random IV for AES-GCM
       const iv = crypto.randomBytes(16);
 
       // Create cipher
-      const cipher = crypto.createCipheriv('aes-256-gcm', symmetricKeyBytes, iv);
+      const cipher = crypto.createCipheriv(
+        'aes-256-gcm',
+        symmetricKeyBytes,
+        iv
+      );
       cipher.setAAD(Buffer.from('intellistixman'));
 
       // Encrypt the data
@@ -161,23 +169,27 @@ export class KyberStrategy extends CryptoKeyStrategy {
         encryptedData: encrypted.toString(this.ENCODING),
       });
     } catch (error) {
-      throw new Error(`Encryption failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Encryption failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 
-  symmetricKeyDecryption(encryptedData: EncryptedData, symmetricKey: string): string {
+  symmetricKeyDecryption(
+    encryptedData: EncryptedData,
+    symmetricKey: string
+  ): string {
     try {
       const { iv, tag, encryptedData: encrypted } = encryptedData;
 
       // Use the symmetric key for AES decryption
-      const symmetricKeyBytes = Buffer.from(
-        symmetricKey,
-        this.ENCODING
-      );
+      const symmetricKeyBytes = Buffer.from(symmetricKey, this.ENCODING);
 
       // Validate key size for AES-256 (32 bytes)
       if (symmetricKeyBytes.length !== 32) {
-        throw new Error(`Invalid symmetric key length: expected 32 bytes for AES-256, got ${symmetricKeyBytes.length} bytes`);
+        throw new Error(
+          `Invalid symmetric key length: expected 32 bytes for AES-256, got ${symmetricKeyBytes.length} bytes`
+        );
       }
 
       // Create decipher
@@ -199,7 +211,9 @@ export class KyberStrategy extends CryptoKeyStrategy {
 
       return decrypted;
     } catch (error) {
-      throw new Error(`Decryption failed: ${error instanceof Error ? error.message : 'Unknown error'}. This could be due to: incorrect key, tampered data, or mismatched encoding.`);
+      throw new Error(
+        `Decryption failed: ${error instanceof Error ? error.message : 'Unknown error'}. This could be due to: incorrect key, tampered data, or mismatched encoding.`
+      );
     }
   }
 }
@@ -209,18 +223,33 @@ const demo = async () => {
   const server = new KyberStrategy('1024');
   const { privateKey, publicKey } = await client.generateKeyPair();
   const serverEncap = await server.generateEncapsulation(publicKey);
-  const clientEncap =await client.decryptEncapsulation(serverEncap.encapsulation, privateKey);
-  const message = "Hello, World!";
-  const encrypted = client.symmetricKeyEncryption(message, clientEncap.symmetricKey);
-  const decrypted = server.symmetricKeyDecryption(encrypted, serverEncap.symmetricKey);
+  const clientEncap = await client.decryptEncapsulation(
+    serverEncap.encapsulation,
+    privateKey
+  );
+  const message = 'Hello, World!';
+  const encrypted = client.symmetricKeyEncryption(
+    message,
+    clientEncap.symmetricKey
+  );
+  const decrypted = server.symmetricKeyDecryption(
+    encrypted,
+    serverEncap.symmetricKey
+  );
 
   console.log(`message: ${message}`);
   console.log(`encrypted: `, encrypted);
   console.log(`decrypted: ${decrypted}`);
 
-  const msg2 = "fuck you";
-  const encrypted2 = server.symmetricKeyEncryption(msg2, serverEncap.symmetricKey);
-  const decrypted2 = client.symmetricKeyDecryption(encrypted2, clientEncap.symmetricKey);
+  const msg2 = 'fuck you';
+  const encrypted2 = server.symmetricKeyEncryption(
+    msg2,
+    serverEncap.symmetricKey
+  );
+  const decrypted2 = client.symmetricKeyDecryption(
+    encrypted2,
+    clientEncap.symmetricKey
+  );
 
   console.log(`message: ${msg2}`);
   console.log(`encrypted: `, encrypted2);

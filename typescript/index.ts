@@ -1,5 +1,5 @@
 const main = async () => {
-    // do something
+  // do something
 };
 
 main();

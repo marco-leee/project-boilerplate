@@ -24,11 +24,17 @@ export const EncryptedDataSchema = z.object({
 export type EncryptedData = z.infer<typeof EncryptedDataSchema>;
 
 export abstract class CryptoKeyStrategy {
-  protected ENCODING: BufferEncoding = 'base64'; 
+  protected ENCODING: BufferEncoding = 'base64';
 
   abstract generateKeyPair(): Promise<KeyPair>;
-  abstract symmetricKeyEncryption(data: string, symmetricKey: string): EncryptedData;
-  abstract symmetricKeyDecryption(encryptedData: EncryptedData, symmetricKey: string): string;
+  abstract symmetricKeyEncryption(
+    data: string,
+    symmetricKey: string
+  ): EncryptedData;
+  abstract symmetricKeyDecryption(
+    encryptedData: EncryptedData,
+    symmetricKey: string
+  ): string;
 
   // Helper methods to convert between formats
   stringToBytes(keyString: string): Uint8Array {
