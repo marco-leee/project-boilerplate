@@ -6,8 +6,8 @@ import (
 )
 
 func GetEnv(key string, defaultValue string) string {
-	value := os.Getenv(key)
-	if value == "" {
+	value, isSet := os.LookupEnv(key)
+	if value == "" || !isSet {
 		return defaultValue
 	}
 	return value
