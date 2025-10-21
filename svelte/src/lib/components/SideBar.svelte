@@ -115,9 +115,7 @@
 		}
 	];
 
-	let links = [
-		{ name: 'Settings', Icon: CogOutline, href: '/settings' },
-	];
+	let links = [{ name: 'Settings', Icon: CogOutline, href: '/settings' }];
 </script>
 
 <SidebarButton breakpoint="lg" onclick={sidebarUi.toggle} class="fixed top-[22px] z-40 mb-2" />
@@ -127,7 +125,7 @@
 	{isOpen}
 	{closeSidebar}
 	params={{ x: -50, duration: 50 }}
-	class="left-0 top-0 mt-[61px] h-screen w-64 bg-gray-50 transition-transform lg:block dark:bg-gray-800"
+	class="top-0 left-0 mt-[61px] h-screen w-64 bg-gray-50 transition-transform lg:block dark:bg-gray-800"
 	classes={{
 		div: 'h-full px-0 py-0 border-r border-gray-200 overflow-y-auto bg-gray-50 dark:bg-gray-800',
 		nonactive: 'p-2',
@@ -136,7 +134,7 @@
 >
 	<h4 class="sr-only">Main menu</h4>
 	<SidebarWrapper
-		class="scrolling-touch max-w-2xs h-full overflow-y-auto bg-white px-3 pt-20 lg:sticky lg:me-0 lg:block lg:h-[calc(100vh-4rem)] lg:pt-5 dark:bg-gray-800"
+		class="scrolling-touch h-full max-w-2xs overflow-y-auto bg-white px-3 pt-20 lg:sticky lg:me-0 lg:block lg:h-[calc(100vh-4rem)] lg:pt-5 dark:bg-gray-800"
 	>
 		<SidebarGroup class={groupClass}>
 			{#each posts as { name, Icon, children, href } (name)}

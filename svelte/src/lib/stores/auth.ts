@@ -25,7 +25,7 @@ function createAuthStore() {
 
 	return {
 		subscribe,
-		
+
 		// Initialize auth state from localStorage
 		init: () => {
 			if (browser) {
@@ -50,8 +50,8 @@ function createAuthStore() {
 
 		// Login function (simple mock - replace with real auth)
 		login: async (email: string, password: string) => {
-			update(state => ({ ...state, loading: true }));
-			
+			update((state) => ({ ...state, loading: true }));
+
 			// Mock authentication - replace with real API call
 			if (email && password) {
 				const user: User = {
@@ -59,20 +59,20 @@ function createAuthStore() {
 					email,
 					name: email.split('@')[0]
 				};
-				
+
 				if (browser) {
 					localStorage.setItem('auth_user', JSON.stringify(user));
 				}
-				
+
 				set({
 					isAuthenticated: true,
 					user,
 					loading: false
 				});
-				
+
 				return { success: true };
 			}
-			
+
 			set({ ...initialState, loading: false });
 			return { success: false, error: 'Invalid credentials' };
 		},

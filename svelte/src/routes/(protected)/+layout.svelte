@@ -42,8 +42,12 @@
 	<!-- Container that accounts for navbar height -->
 	<div class="flex h-[calc(100vh-4rem)]">
 		<!-- Sidebar Button - positioned relative to navbar -->
-		<SidebarButton breakpoint="lg" onclick={demoSidebarUi.toggle} class="fixed top-20 left-4 z-30" />
-		
+		<SidebarButton
+			breakpoint="lg"
+			onclick={demoSidebarUi.toggle}
+			class="fixed top-20 left-4 z-30"
+		/>
+
 		<!-- Sidebar -->
 		<Sidebar
 			{activeUrl}
@@ -51,7 +55,7 @@
 			isOpen={isDemoOpen}
 			closeSidebar={demoSidebarUi.close}
 			params={{ x: -50, duration: 50 }}
-			class="z-30 h-full border-r border-gray-200 mt-0"
+			class="z-30 mt-0 h-full border-r border-gray-200"
 			classes={{ nonactive: 'p-2', active: 'p-2' }}
 		>
 			<SidebarGroup>
@@ -90,21 +94,21 @@
 					{/snippet}
 					{#snippet subtext()}
 						<span
-							class="bg-primary-200 text-primary-600 dark:bg-primary-900 dark:text-primary-200 ms-3 inline-flex h-3 w-3 items-center justify-center rounded-full p-3 text-sm font-medium"
+							class="ms-3 inline-flex h-3 w-3 items-center justify-center rounded-full bg-primary-200 p-3 text-sm font-medium text-primary-600 dark:bg-primary-900 dark:text-primary-200"
 							>3</span
 						>
 					{/snippet}
 				</SidebarItem>
 			</SidebarGroup>
 		</Sidebar>
-		
+
 		<!-- Main Content Area -->
-		<div class="flex-1 flex">
+		<div class="flex flex-1">
 			<!-- Main Content -->
 			<main class="flex-1 overflow-y-auto bg-gray-50 p-6">
 				{@render children()}
 			</main>
-			
+
 			<!-- Right Sidebar (optional) -->
 			<!-- <aside class="w-64 bg-white border-l border-gray-200 p-4">
 				<h3 class="text-lg font-semibold mb-4">Right Panel</h3>

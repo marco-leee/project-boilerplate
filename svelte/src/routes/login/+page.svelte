@@ -25,13 +25,13 @@
 		error = '';
 
 		const result = await auth.login(email, password);
-		
+
 		if (result.success) {
 			goto('/dashboard');
 		} else {
 			error = result.error || 'Login failed';
 		}
-		
+
 		loading = false;
 	}
 </script>
@@ -40,8 +40,8 @@
 	<title>Login</title>
 </svelte:head>
 
-<div class="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-	<div class="max-w-md w-full space-y-8">
+<div class="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12 sm:px-6 lg:px-8">
+	<div class="w-full max-w-md space-y-8">
 		<div>
 			<h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
 				Sign in to your account
@@ -50,13 +50,11 @@
 				Enter any email and password to login (demo)
 			</p>
 		</div>
-		
+
 		<form class="mt-8 space-y-6" onsubmit={handleSubmit}>
-			<div class="rounded-md shadow-sm space-y-4">
+			<div class="space-y-4 rounded-md shadow-sm">
 				<div>
-					<label for="email" class="block text-sm font-medium text-gray-700">
-						Email address
-					</label>
+					<label for="email" class="block text-sm font-medium text-gray-700"> Email address </label>
 					<input
 						id="email"
 						name="email"
@@ -64,15 +62,13 @@
 						autocomplete="email"
 						required
 						bind:value={email}
-						class="mt-1 block w-full px-3 py-2 border text-gray-900 border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+						class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 focus:outline-none"
 						placeholder="Enter your email"
 					/>
 				</div>
-				
+
 				<div>
-					<label for="password" class="block text-sm font-medium text-gray-700">
-						Password
-					</label>
+					<label for="password" class="block text-sm font-medium text-gray-700"> Password </label>
 					<input
 						id="password"
 						name="password"
@@ -80,7 +76,7 @@
 						autocomplete="current-password"
 						required
 						bind:value={password}
-						class="mt-1 block w-full px-3 py-2 border text-gray-900 border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+						class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 focus:outline-none"
 						placeholder="Enter your password"
 					/>
 				</div>
@@ -98,7 +94,7 @@
 				<button
 					type="submit"
 					disabled={loading}
-					class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+					class="group relative flex w-full justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
 				>
 					{loading ? 'Signing in...' : 'Sign in'}
 				</button>
