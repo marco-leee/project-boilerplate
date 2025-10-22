@@ -5,6 +5,8 @@
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { Toaster } from '$lib/components/ui/sonner';
+	import { toast } from "svelte-sonner";
+	import { ModeWatcher } from 'mode-watcher';
 	let { children } = $props();
 
 	onMount(() => {
@@ -14,6 +16,7 @@
 			if ($auth.isAuthenticated && !$auth.loading) {
 				goto('/dashboard');
 			} else if (!$auth.isAuthenticated && !$auth.loading) {
+				toast.error('Please login to continue');
 				goto('/login');
 			}
 		});
@@ -25,6 +28,8 @@
 <svelte:head>
 	<link rel="icon" href={favicon} />
 </svelte:head>
+
+<ModeWatcher />
 
 {@render children?.()}
 

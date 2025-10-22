@@ -2,6 +2,11 @@
 	// sample data
 	const data = {
 		versions: ['1.0.1', '1.1.0-alpha', '2.0.0-beta1'],
+		user: {
+			name: 'shadcn',
+			email: 'm@example.com',
+			avatar: '/avatars/shadcn.jpg'
+		},
 		navMain: [
 			{
 				title: 'Getting Started',
@@ -41,6 +46,7 @@
 	import VersionSwitcher from './version-switcher.svelte';
 	import * as Sidebar from '$lib/components/ui/sidebar';
 	import type { ComponentProps } from 'svelte';
+	import NavUser from './nav-user.svelte';
 
 	let { ref = $bindable(null), ...restProps }: ComponentProps<typeof Sidebar.Root> = $props();
 </script>
@@ -71,5 +77,8 @@
 			</Sidebar.Group>
 		{/each}
 	</Sidebar.Content>
+	<Sidebar.Footer>
+		<NavUser user={data.user} />
+	</Sidebar.Footer>
 	<Sidebar.Rail />
 </Sidebar.Root>

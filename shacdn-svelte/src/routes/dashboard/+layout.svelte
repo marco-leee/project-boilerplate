@@ -1,16 +1,17 @@
 <script lang="ts">
-	import AppSidebar from '$lib/components/app-sidebar.svelte';
-	import * as Breadcrumb from '$lib/components/ui/breadcrumb';
+	import AppSidebar from '$lib/components/app-bar/app-sidebar.svelte';
 	import { Separator } from '$lib/components/ui/separator';
 	import * as Sidebar from '$lib/components/ui/sidebar';
 	import { auth } from '$lib/stores/auth';
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
+	import { toast } from 'svelte-sonner';
 	let { children } = $props();
 
 	onMount(() => {
 		const unsubscribe = auth.subscribe(($auth: any) => {
 			if (!$auth.isAuthenticated && !$auth.loading) {
+				toast.error('Please login to continue');
 				goto('/login');
 			}
 		});
