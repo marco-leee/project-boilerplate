@@ -1,3 +1,4 @@
+import { Theme } from "@radix-ui/themes";
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react";
 
 interface AppConfig {
@@ -6,7 +7,7 @@ interface AppConfig {
 }
 
 interface UserConfig {
-    theme: string;
+    theme: 'light' | 'dark';
 }
 
 interface Config extends AppConfig, UserConfig { }
@@ -14,7 +15,7 @@ interface Config extends AppConfig, UserConfig { }
 const defaultConfig: Config = {
     apiBaseUrl: 'http://localhost:8080',
     env: 'development',
-    theme: 'light',
+    theme: 'dark',
 };
 
 const configKey = 'app-config';
@@ -45,7 +46,9 @@ export const ConfigProvider = ({ children }: { children: ReactNode }) => {
 
     return (
         <ConfigContext.Provider value={config}>
-            {children}
+            <Theme appearance={config.theme}>
+                {children}
+            </Theme>
         </ConfigContext.Provider>
     );
 }
