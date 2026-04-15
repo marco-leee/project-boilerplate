@@ -6,3 +6,10 @@
    3. go mod init module
    4. cd ..
    5. go work use ./module
+
+# Linterring + formatting
+
+brew install golangci-lint
+
+just lint
+just format

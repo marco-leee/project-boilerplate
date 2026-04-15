@@ -12,3 +12,9 @@
    - Add the dependency in `package.json`: `"@intellistixman/package-name": "workspace:*"`
    - Import normally: `import { something } from "@intellistixman/package-name"`
    - Bun automatically resolves workspace packages using the `workspace:*` protocol
+
+# Tools
+
+1. Biome (linter, formatter, type checker)
+2. Bun (package manager, bundler, runtime)
+3. Jest (testing)

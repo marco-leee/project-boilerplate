@@ -11,4 +11,7 @@
 
 # License
 
-MIT
+# Tools
+
+1. ruff (linter, formatter, type checker)
+2. pytest (testing)
